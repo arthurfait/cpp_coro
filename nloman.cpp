@@ -4,26 +4,39 @@
 #include "json.hpp"
 
 
+using json = nlohmann::json;
 
-int main(int argc, char const *argv[])
+int main()
 {
-    if(argc != 2)
-    {
-        std::cout << "Need an input file" << std::endl;
-        return 0;
-    }
-    using json = nlohmann::json;
-    json s = json::parse(std::fstream(argv[1]));
+    // the original document
+    json document = R"({
+                "title": "Goodbye!",
+                "author": {
+                    "givenName": "John",
+                    "familyName": "Doe"
+                },
+                "tags": [
+                    "example",
+                    "sample"
+                ],
+                "content": "This will be unchanged"
+            })"_json;
 
-    std::cout << std::setw(4) << s << "\n\n";
+    // the patch
+    json patch = R"({
+                "title": "Hello!",
+                "phoneNumber": "+01-123-456-7890",
+                "author": {
+                    "familyName": null
+                },
+                "tags": [
+                    "example"
+                ]
+            })"_json;
 
-    auto i = 0u;
-    std::cout << "Array: " << std::boolalpha << s.is_array() << "\n";
-    for(auto it : s)
-    {
-        std::cout << "Object: " << std::boolalpha << it.is_object() << "\n";
-        std::cout << "Idx: " << i++ << "\n";
-        std::cout << std::setw(4) << it << "\n";
-    }
-    return 0;
+    // apply the patch
+    document.merge_patch(patch);
+
+    // output original and patched document
+    std::cout << std::setw(4) << document << std::endl;
 }
